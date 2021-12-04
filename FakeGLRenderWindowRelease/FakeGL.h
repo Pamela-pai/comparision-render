@@ -26,7 +26,6 @@
 #include <deque>
 #include <stack>
 #include <algorithm>
-
 // we will store all of the FakeGL context in a class object
 // this is similar to the real OpenGL which handles multiple windows
 // by having separate variables for each stored in separate graphics
@@ -65,6 +64,10 @@ const unsigned int FAKEGL_MODULATE = 1;
 const unsigned int FAKEGL_REPLACE = 2;
 
 // class with vertex attributes
+
+
+
+
 class vertexWithAttributes
     { // class vertexWithAttributes
     public:
@@ -72,17 +75,18 @@ class vertexWithAttributes
     Homogeneous4 position;
 	// Colour
     RGBAValue colour;
-    //texture
     float u,v;
 	// you may need to add more state here
-    float emissionM[4];
-    float ambientM[4];
-    float specularM[4];
-    float diffuseM[4];
-    float shinessM;
     Homogeneous4 normal;
 
-    vertexWithAttributes(float x,float y,float z){
+    float emissionMaterial[4];
+    float ambientMaterial[4];
+    float specularMaterial[4];
+    float diffuseMaterial[4];
+    float shinessMaterial;
+
+
+    vertexWithAttributes(float x, float y, float z){
         position = Homogeneous4(x,y,z);
     }
 
@@ -96,21 +100,18 @@ class screenVertexWithAttributes
     Cartesian3 position;
 	// Colour
     RGBAValue colour;
-
-    // you may need to add more state here
     float u,v;
     Homogeneous4 normal;
 
-    float emissionM[4];
-    float ambientM[4];
-    float specularM[4];
-    float diffuseM[4];
-    float shinessM;
-
-    screenVertexWithAttributes(float x,float y,float z){
+    float emissionMaterial[4];
+    float ambientMaterial[4];
+    float specularMaterial[4];
+    float diffuseMaterial[4];
+    float shinessMaterial;
+	// you may need to add more state here
+    screenVertexWithAttributes(float x, float y, float z){
         position = Cartesian3(x,y,z);
     }
-
     }; // class screenVertexWithAttributes
 
 // class for a fragment with attributes
@@ -124,12 +125,12 @@ class fragmentWithAttributes
 
 	// you may need to add more state here
     fragmentWithAttributes(){};
-    fragmentWithAttributes(float x,float y,RGBAValue _colour){
+
+    fragmentWithAttributes(float x, float y, RGBAValue color_){
         row = x;
         col = y;
-        colour = _colour;
+        colour = color_;
     }
-
     }; // class fragmentWithAttributes
 
 // the class storing the FakeGL context
@@ -144,42 +145,41 @@ class FakeGL
     //-----------------------------
     // ATTRIBUTE STATE
     //-----------------------------
+    RGBAValue backGroundColor;
+    RGBAValue colorf;
+    RGBAImage texture;
 
-    float pointSize = 1;
-    float lineWidth = 1;
+    float lineWidth=1;
+    float pointSize=1;
+
     unsigned int currentPrimitive;
-    unsigned int currentMatMode = -1;
+    unsigned int currentMatMode=-1;
+    unsigned int textureMode;
     Matrix4 modelViewMat;
     Matrix4 projectionMat;
     Matrix4 viewPortMat;
     std::stack<Matrix4> matStack;
-    //material
-    float shinessM;
-    float emissionM[4];
-    float ambientM[4];
-    float specularM[4];
-    float diffuseM[4];
-
-    Homogeneous4 normal;
-    float textureU=-1;
-    float textureV=-1;
-
     bool enable_depth_test = false;
     bool enable_lighting = false;
     bool enable_texture_2D = false;
-    bool enable_phong_shading = false;
-    //light
-    float ambientL[4];
-    float diffuseL[4];
-    float specularL[4];
-    float positionL[4];
+    bool enable_phonh_shading = false;
 
-    unsigned int textureMode;
-    RGBAImage textureImg;
-    RGBAValue backGroundColor;
-    RGBAValue colorf;
+    float ambietLight[4];
+    float diffuseLight[4];
+    float specularLight[4];
+    float positionLight[4];
+
+    float emissionMaterial[4];
+    float ambientMaterial[4];
+    float specularMaterial[4];
+    float diffuseMaterial[4];
+    float shinessMaterial;
+
+    float textureU = -1, textureV=-1;
+    Homogeneous4 normal;
 
     std::deque<RGBAValue> textureQueue;
+
     //-----------------------------
     // OUTPUT FROM INPUT STAGE
     // INPUT TO TRANSFORM STAGE
@@ -201,8 +201,8 @@ class FakeGL
     //-----------------------------
     // RASTERISE STATE
     //-----------------------------
+    //depth test
     bool depthTest(int x, int y, float z);
-
     //-----------------------------
     // OUTPUT FROM RASTER STAGE
     // INPUT TO FRAGMENT STAGE
@@ -261,7 +261,10 @@ class FakeGL
     //                                                 //
     //-------------------------------------------------//
 
-    // set the matrix mode (i.e. which one we change)   
+
+    auto reflect(const Cartesian3 & vec,const Cartesian3 & normal) -> Cartesian3;
+
+    // set the matrix mode (i.e. which one we change)
     void MatrixMode(unsigned int whichMatrix);
 
     // pushes a matrix on the stack
@@ -293,8 +296,6 @@ class FakeGL
     
     // sets the viewport
     void Viewport(int x, int y, int width, int height);
-
-    auto reflect(const Cartesian3 & vec,const Cartesian3 & normal) -> Cartesian3;
 
     //-------------------------------------------------//
     //                                                 //
@@ -362,7 +363,6 @@ class FakeGL
 
     // clears the frame buffer
     void Clear(unsigned int mask);
-    
     // sets the clear colour for the frame buffer
     void ClearColor(float red, float green, float blue, float alpha);
     
