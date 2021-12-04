@@ -1,1 +1,1 @@
-# comparision-render
+# OpenGL-render
